@@ -1,0 +1,5 @@
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/Lotto.GeneratedMSBuildEditorConfig.editorconfig
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/Lotto.AssemblyInfoInputs.cache
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/Lotto.AssemblyInfo.cs
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/Lotto.csproj.CoreCompileInputs.cache
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/Lotto.sourcelink.json
