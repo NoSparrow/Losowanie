@@ -36,18 +36,18 @@ class Program
 
         var draws = doc.DocumentNode.SelectNodes("//div[@class='lista_ostatnich_losowan']/ul");
         
+        int counter = 1; // Numeracja od 1
         if (draws != null)
         {
             foreach (var draw in draws.Reverse()) // Odwracamy, aby mieć wyniki od najstarszego
             {
-                var numberNode = draw.SelectSingleNode(".//li[contains(@class, 'nr_in_list')]");
                 var dateNode = draw.SelectSingleNode(".//li[contains(@class, 'date_in_list')]");
                 var numberNodes = draw.SelectNodes(".//li[contains(@class, 'numbers_in_list')]");
 
-                if (numberNode != null && dateNode != null && numberNodes != null)
+                if (dateNode != null && numberNodes != null)
                 {
                     List<int> numbers = numberNodes.Select(n => int.Parse(n.InnerText.Trim())).ToList();
-                    results.Add(new LottoResult(int.Parse(numberNode.InnerText.Trim().TrimEnd('.')), dateNode.InnerText.Trim(), numbers));
+                    results.Add(new LottoResult(counter++, dateNode.InnerText.Trim(), numbers));
                 }
             }
         }
@@ -58,8 +58,6 @@ class Program
     // Wyświetlanie wyników w tabeli z liczbami pod sobą
     static void DisplayResults(List<LottoResult> results)
     {
-        int maxNumbers = results.Max(r => r.Numbers.Count);
-        
         Console.WriteLine("Numer | Data         | Liczby");
         Console.WriteLine("----------------------------------");
 
@@ -67,20 +65,7 @@ class Program
         {
             Console.Write(result.DrawNumber.ToString().PadRight(6) + "| ");
             Console.Write(result.Date.PadRight(12) + "| ");
-            Console.WriteLine(string.Join(" ", result.Numbers));
-        }
-        
-        Console.WriteLine("\nLiczby w kolumnach:");
-        for (int i = 0; i < maxNumbers; i++)
-        {
-            foreach (var result in results)
-            {
-                if (i < result.Numbers.Count)
-                    Console.Write(result.Numbers[i].ToString().PadRight(4));
-                else
-                    Console.Write("    ");
-            }
-            Console.WriteLine();
+            Console.WriteLine(string.Join(" ", result.Numbers.Select(n => n.ToString().PadLeft(2))));
         }
     }
 }
