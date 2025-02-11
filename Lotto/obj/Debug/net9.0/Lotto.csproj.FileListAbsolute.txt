@@ -3,3 +3,16 @@
 /home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/Lotto.AssemblyInfo.cs
 /home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/Lotto.csproj.CoreCompileInputs.cache
 /home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/Lotto.sourcelink.json
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/bin/Debug/net9.0/Lotto
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/bin/Debug/net9.0/Lotto.deps.json
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/bin/Debug/net9.0/Lotto.runtimeconfig.json
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/bin/Debug/net9.0/Lotto.dll
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/bin/Debug/net9.0/Lotto.pdb
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/bin/Debug/net9.0/HtmlAgilityPack.dll
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/Lotto.csproj.AssemblyReference.cache
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/Lotto.csproj.Up2Date
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/Lotto.dll
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/refint/Lotto.dll
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/Lotto.pdb
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/Lotto.genruntimeconfig.cache
+/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/Debug/net9.0/ref/Lotto.dll

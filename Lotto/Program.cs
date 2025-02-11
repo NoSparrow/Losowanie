@@ -1,9 +1,8 @@
 ﻿using System;
-using System.IO;
-using System.Net.Http;
-using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
 using System.Threading;
 
@@ -11,124 +10,91 @@ class Program
 {
     static async Task Main()
     {
-        string baseUrl = "https://megalotto.pl/wyniki/lotto";
-        string desktopPath = "/home/marcin/Pulpit/Zrzut danych Lotto";
-        string filePath = Path.Combine(desktopPath, "PobraneLosowania.txt");
-
-        // Tworzenie folderu na Pulpicie, jeśli nie istnieje
-        if (!Directory.Exists(desktopPath))
+        Console.WriteLine("Pobieranie danych Lotto...");
+        var lottoResults = await Task.Run(() => FetchLottoResults()); // Uruchomienie wątku do pobierania danych
+        
+        if (lottoResults.Count > 0)
         {
-            Directory.CreateDirectory(desktopPath);
+            DisplayResults(lottoResults);
         }
-
-        List<LottoResult> allResults = new List<LottoResult>();
-        List<int> years = Enumerable.Range(1957, 2025 - 1957 + 1).ToList();
-
-        Console.WriteLine("Rozpoczynam pobieranie danych wielowątkowo...");
-
-        // Pobieranie danych równocześnie dla wielu lat
-        using (SemaphoreSlim semaphore = new SemaphoreSlim(5)) // Ograniczenie do 5 równoczesnych żądań
+        else
         {
-            await Parallel.ForEachAsync(years, async (year, _) =>
-            {
-                await semaphore.WaitAsync();
-                try
-                {
-                    string url = $"{baseUrl}/losowania-z-roku-{year}";
-                    Console.WriteLine($"Pobieranie wyników dla roku: {year}...");
-                    List<LottoResult> results = await GetResultsFromPage(url);
-                    lock (allResults)
-                    {
-                        allResults.AddRange(results);
-                    }
-                }
-                finally
-                {
-                    semaphore.Release();
-                }
-            });
+            Console.WriteLine("Nie udało się pobrać wyników.");
         }
-
-        // Sortowanie wyników chronologicznie
-        allResults = allResults.OrderBy(r => r.Date).ToList();
-
-        // Zapisywanie wyników do pliku
-        SaveResultsToFile(allResults, filePath);
-        Console.WriteLine($"Wyniki zapisane w: {filePath}");
     }
 
-    static async Task<List<LottoResult>> GetResultsFromPage(string url)
+    // Pobieranie danych Lotto z internetu
+    static List<LottoResult> FetchLottoResults()
     {
         List<LottoResult> results = new List<LottoResult>();
+        string url = "https://megalotto.pl/lotto/wyniki";
+        HttpClient client = new HttpClient();
+        var response = client.GetStringAsync(url).Result;
 
-        using (HttpClient client = new HttpClient())
+        HtmlDocument doc = new HtmlDocument();
+        doc.LoadHtml(response);
+
+        var draws = doc.DocumentNode.SelectNodes("//div[@class='lista_ostatnich_losowan']/ul");
+        
+        if (draws != null)
         {
-            try
+            foreach (var draw in draws.Reverse()) // Odwracamy, aby mieć wyniki od najstarszego
             {
-                string html = await client.GetStringAsync(url);
-                HtmlDocument doc = new HtmlDocument();
-                doc.LoadHtml(html);
+                var numberNode = draw.SelectSingleNode(".//li[contains(@class, 'nr_in_list')]");
+                var dateNode = draw.SelectSingleNode(".//li[contains(@class, 'date_in_list')]");
+                var numberNodes = draw.SelectNodes(".//li[contains(@class, 'numbers_in_list')]");
 
-                var drawNodes = doc.DocumentNode.SelectNodes("//ul[@style='position: relative;']");
-                if (drawNodes == null) return results;
-
-                foreach (var drawNode in drawNodes)
+                if (numberNode != null && dateNode != null && numberNodes != null)
                 {
-                    var dateNode = drawNode.SelectSingleNode(".//li[@class='date_in_list']");
-                    var numberNodes = drawNode.SelectNodes(".//li[@class='numbers_in_list']");
-
-                    if (dateNode != null && numberNodes != null)
-                    {
-                        string dateText = dateNode.InnerText.Trim();
-                        List<string> numbers = numberNodes.Select(n => n.InnerText.Trim().PadLeft(2, '0')).ToList();
-                        string numbersText = string.Join(" ", numbers);
-
-                        if (DateTime.TryParse(dateText, out DateTime drawDate))
-                        {
-                            results.Add(new LottoResult(drawDate, numbersText));
-                        }
-                    }
+                    List<int> numbers = numberNodes.Select(n => int.Parse(n.InnerText.Trim())).ToList();
+                    results.Add(new LottoResult(int.Parse(numberNode.InnerText.Trim().TrimEnd('.')), dateNode.InnerText.Trim(), numbers));
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Błąd podczas pobierania {url}: {ex.Message}");
-            }
         }
-
+        
         return results;
     }
 
-    static void SaveResultsToFile(List<LottoResult> results, string filePath)
+    // Wyświetlanie wyników w tabeli z liczbami pod sobą
+    static void DisplayResults(List<LottoResult> results)
     {
-        using (StreamWriter writer = new StreamWriter(filePath))
-        {
-            writer.WriteLine("Nr   | Data        | Numery");
-            writer.WriteLine("------------------------------------------");
+        int maxNumbers = results.Max(r => r.Numbers.Count);
+        
+        Console.WriteLine("Numer | Data         | Liczby");
+        Console.WriteLine("----------------------------------");
 
-            int index = 1;
+        foreach (var result in results)
+        {
+            Console.Write(result.DrawNumber.ToString().PadRight(6) + "| ");
+            Console.Write(result.Date.PadRight(12) + "| ");
+            Console.WriteLine(string.Join(" ", result.Numbers));
+        }
+        
+        Console.WriteLine("\nLiczby w kolumnach:");
+        for (int i = 0; i < maxNumbers; i++)
+        {
             foreach (var result in results)
             {
-                writer.WriteLine($"{index,-4} | {result.Date:dd/MM/yyyy} | {FormatNumbers(result.Numbers)}");
-                index++;
+                if (i < result.Numbers.Count)
+                    Console.Write(result.Numbers[i].ToString().PadRight(4));
+                else
+                    Console.Write("    ");
             }
+            Console.WriteLine();
         }
-    }
-
-    static string FormatNumbers(string numbers)
-    {
-        List<string> numList = numbers.Split(' ').Select(n => n.PadLeft(2, '0')).ToList();
-        return string.Join(" ", numList);
     }
 }
 
+// Klasa do przechowywania wyników Lotto
 class LottoResult
 {
-    public DateTime Date { get; }
-    public string Numbers { get; }
+    public int DrawNumber { get; }
+    public string Date { get; }
+    public List<int> Numbers { get; }
 
-    public LottoResult(DateTime date, string numbers)
+    public LottoResult(int drawNumber, string date, List<int> numbers)
     {
+        DrawNumber = drawNumber;
         Date = date;
         Numbers = numbers;
     }
