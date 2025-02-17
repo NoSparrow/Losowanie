@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/Lotto.csproj": {}
+    "/home/marcin/Pulpit/Programowanie/GitKraken/Losowanie/Lotto/Lotto.csproj": {}
   },
   "projects": {
-    "/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/Lotto.csproj": {
+    "/home/marcin/Pulpit/Programowanie/GitKraken/Losowanie/Lotto/Lotto.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/Lotto.csproj",
+        "projectUniqueName": "/home/marcin/Pulpit/Programowanie/GitKraken/Losowanie/Lotto/Lotto.csproj",
         "projectName": "Lotto",
-        "projectPath": "/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/Lotto.csproj",
+        "projectPath": "/home/marcin/Pulpit/Programowanie/GitKraken/Losowanie/Lotto/Lotto.csproj",
         "packagesPath": "/home/marcin/.nuget/packages/",
-        "outputPath": "/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/obj/",
+        "outputPath": "/home/marcin/Pulpit/Programowanie/GitKraken/Losowanie/Lotto/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/home/marcin/.nuget/NuGet/NuGet.Config"
@@ -38,7 +38,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.100"
+        "SdkAnalysisLevel": "9.0.200"
       },
       "frameworks": {
         "net9.0": {
@@ -65,7 +65,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.102/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.200/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
