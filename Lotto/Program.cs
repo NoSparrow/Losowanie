@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using System.Threading;
+using System.IO;
 
 class Program
 {
@@ -14,7 +15,39 @@ class Program
     
     static async Task Main()
     {
-        // Pobranie linków do lat
+        // Krok 1: Ustalenie lokalizacji pliku
+        string defaultPath = "/home/marcin/Pulpit/LottoCS/PobraneDane.txt";
+        Console.WriteLine("Czy utworzyć plik w domyślnej lokalizacji (/home/marcin/Pulpit/LottoCS/PobraneDane.txt)? (y/n)");
+        string answer = Console.ReadLine();
+        string filePath;
+        if (answer.Trim().ToLower().StartsWith("y"))
+        {
+            filePath = defaultPath;
+        }
+        else
+        {
+            Console.WriteLine("Podaj nową lokalizację (pełna ścieżka, w tym nazwa pliku):");
+            filePath = Console.ReadLine().Trim();
+        }
+        
+        // Sprawdzenie istnienia katalogu i pliku; jeśli nie istnieją, tworzymy je
+        string directory = Path.GetDirectoryName(filePath);
+        if (!Directory.Exists(directory))
+        {
+            Directory.CreateDirectory(directory);
+            Console.WriteLine($"Utworzono katalog: {directory}");
+        }
+        if (!File.Exists(filePath))
+        {
+            File.Create(filePath).Close();
+            Console.WriteLine($"Utworzono plik: {filePath}");
+        }
+        else
+        {
+            Console.WriteLine($"Plik już istnieje: {filePath}");
+        }
+        
+        // Krok 2: Pobranie wyników ze wszystkich lat
         Console.WriteLine("Pobieranie linków do lat...");
         var yearLinks = await FetchYearLinks();
         Console.WriteLine($"Znaleziono {yearLinks.Count} lat.");
@@ -22,10 +55,11 @@ class Program
         int totalYears = yearLinks.Count;
         List<Task<List<LottoResult>>> tasks = new List<Task<List<LottoResult>>>();
 
-        // Uruchomienie równoległego pobierania wyników dla każdego roku
+        // Równoległe pobieranie wyników dla każdego roku z wyświetleniem progresu
         foreach (var yearLink in yearLinks)
         {
-            tasks.Add(Task.Run(() => {
+            tasks.Add(Task.Run(() =>
+            {
                 var results = FetchLottoResultsFromYear(yearLink);
                 lock (progressLock)
                 {
@@ -35,12 +69,10 @@ class Program
                 return results;
             }));
         }
-
-        // Czekamy na ukończenie wszystkich zadań
         var resultsByYear = await Task.WhenAll(tasks);
         var allResults = resultsByYear.SelectMany(x => x).ToList();
 
-        // Sortowanie wyników według daty (zakładamy format dd-MM-yyyy)
+        // Sortowanie wyników od najstarszego (zakładamy format dd-MM-yyyy)
         allResults.Sort((a, b) =>
         {
             DateTime da, db;
@@ -52,21 +84,37 @@ class Program
             return a.Date.CompareTo(b.Date);
         });
 
-        // Budowanie tabeli "pobrane" [Data | Zwycięska kombinacja]
-        List<string[]> pobrane = new List<string[]>();
+        // Krok 3: Budowanie tabeli "pobrane" [Data | Zwycięska kombinacja]
+        List<string> pobraneLines = new List<string>();
         foreach (var result in allResults)
         {
             string combo = string.Join(" ", result.Numbers.Select(n => n.ToString().PadLeft(2)));
-            pobrane.Add(new string[] { result.Date, combo });
+            // Format: Data | Zwycięska kombinacja (data wyrównana do 12 znaków)
+            pobraneLines.Add(result.Date.PadRight(12) + " | " + combo);
         }
 
-        // Wyświetlenie tabeli "pobrane"
-        Console.WriteLine("\nTabela 'pobrane':");
-        Console.WriteLine("Data         | Zwycięska kombinacja");
-        Console.WriteLine("-------------------------------------");
-        foreach (var row in pobrane)
+        // Krok 4: Porównanie zawartości tabeli z danymi zapisanymi w pliku
+        var fileLines = File.Exists(filePath) ? File.ReadAllLines(filePath).ToList() : new List<string>();
+        var missingLines = pobraneLines.Except(fileLines).ToList();
+
+        if (missingLines.Count > 0)
         {
-            Console.WriteLine(row[0].PadRight(12) + " | " + row[1]);
+            Console.WriteLine($"\nBrakuje {missingLines.Count} losowań w pliku.");
+            Console.WriteLine("Czy dodać brakujące losowania do pliku? (y/n)");
+            string answerAdd = Console.ReadLine();
+            if (answerAdd.Trim().ToLower().StartsWith("y"))
+            {
+                File.AppendAllLines(filePath, missingLines);
+                Console.WriteLine("Dodano brakujące losowania do pliku.");
+            }
+            else
+            {
+                Console.WriteLine("Brakujące losowania nie zostały dodane.");
+            }
+        }
+        else
+        {
+            Console.WriteLine("\nPlik zawiera już wszystkie losowania.");
         }
     }
     
@@ -105,7 +153,7 @@ class Program
         HtmlDocument doc = new HtmlDocument();
         doc.LoadHtml(response);
 
-        // Wyniki znajdują się w <div class="lista_ostatnich_losowan">, a każdy wynik w osobnym <ul>
+        // Wyniki znajdują się w <div class='lista_ostatnich_losowan'>, a każdy wynik w osobnym <ul>
         var draws = doc.DocumentNode.SelectNodes("//div[@class='lista_ostatnich_losowan']/ul");
         if (draws != null)
         {
