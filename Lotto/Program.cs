@@ -84,37 +84,41 @@ class Program
             return a.Date.CompareTo(b.Date);
         });
 
-        // Krok 3: Budowanie tabeli "pobrane" [Data | Zwycięska kombinacja]
-        List<string> pobraneLines = new List<string>();
-        foreach (var result in allResults)
+        // Krok 3: Budowanie kompletnej tabeli "pobrane" z wewnętrzną numeracją
+        // Format: "Lp.  | Data         | Zwycięska kombinacja"
+        List<string> completeTableLines = new List<string>();
+        completeTableLines.Add("Lp.  | Data         | Zwycięska kombinacja");
+        for (int i = 0; i < allResults.Count; i++)
         {
+            var result = allResults[i];
             string combo = string.Join(" ", result.Numbers.Select(n => n.ToString().PadLeft(2)));
-            // Format: Data | Zwycięska kombinacja (data wyrównana do 12 znaków)
-            pobraneLines.Add(result.Date.PadRight(12) + " | " + combo);
+            string line = $"{(i + 1).ToString().PadRight(4)}| {result.Date.PadRight(12)}| {combo}";
+            completeTableLines.Add(line);
         }
 
-        // Krok 4: Porównanie zawartości tabeli z danymi zapisanymi w pliku
+        // Krok 4: Sprawdzenie poprawności istniejącego pliku
         var fileLines = File.Exists(filePath) ? File.ReadAllLines(filePath).ToList() : new List<string>();
-        var missingLines = pobraneLines.Except(fileLines).ToList();
 
-        if (missingLines.Count > 0)
+        bool fileIsUpToDate = fileLines.SequenceEqual(completeTableLines);
+        if (!fileIsUpToDate)
         {
-            Console.WriteLine($"\nBrakuje {missingLines.Count} losowań w pliku.");
-            Console.WriteLine("Czy dodać brakujące losowania do pliku? (y/n)");
-            string answerAdd = Console.ReadLine();
-            if (answerAdd.Trim().ToLower().StartsWith("y"))
+            Console.WriteLine("\nPlik zawiera niekompletne lub nieprawidłowe dane.");
+            Console.WriteLine($"Obecna liczba wierszy: {fileLines.Count}, oczekiwana liczba wierszy: {completeTableLines.Count}");
+            Console.WriteLine("Czy nadpisać plik nowymi danymi? (y/n)");
+            string answerUpdate = Console.ReadLine();
+            if (answerUpdate.Trim().ToLower().StartsWith("y"))
             {
-                File.AppendAllLines(filePath, missingLines);
-                Console.WriteLine("Dodano brakujące losowania do pliku.");
+                File.WriteAllLines(filePath, completeTableLines);
+                Console.WriteLine("Plik został zaktualizowany.");
             }
             else
             {
-                Console.WriteLine("Brakujące losowania nie zostały dodane.");
+                Console.WriteLine("Plik nie został zaktualizowany.");
             }
         }
         else
         {
-            Console.WriteLine("\nPlik zawiera już wszystkie losowania.");
+            Console.WriteLine("\nPlik jest już aktualny.");
         }
     }
     
@@ -164,7 +168,7 @@ class Program
                 if (dateNode != null && numberNodes != null)
                 {
                     List<int> numbers = numberNodes.Select(n => int.Parse(n.InnerText.Trim())).ToList();
-                    // Numer losowania nie jest istotny – w naszym systemie generujemy własną numerację
+                    // Numer z zewnętrznej strony nie jest używany – stosujemy wewnętrzną numerację
                     results.Add(new LottoResult(0, dateNode.InnerText.Trim(), numbers));
                 }
             }
