@@ -53,8 +53,8 @@ class Program
         if (!ContinuePromptDefault("Funkcja 3 zakończona. Wybierz: 1. Następny krok, 2. Wyjście")) return;
 
         // Funkcje 4-10: Pozostałe funkcje – wyświetlają komunikat i pytają o przejście do następnej funkcji
-        Function4_Dummy();
-        if (!ContinuePromptCustom("Funkcja 4 zakończona. Wybierz: 1. Przejdź do funkcji 5, 2. Wyjście")) return;
+        DomyślnaWariacjaiOdchylenie();
+        if (!ContinuePromptCustom("Obliczanie domyślnych wartości wariacji i odchylenia standardowego zakończone. Wybierz: 1. Przejdź do funkcji 5, 2. Wyjście")) return;
 
         Function5_Dummy();
         if (!ContinuePromptCustom("Funkcja 5 zakończona. Wybierz: 1. Przejdź do funkcji 6, 2. Wyjście")) return;
@@ -242,10 +242,52 @@ class Program
         }
     }
 
-    // Funkcje 4-10: Funkcje pomocnicze wyświetlające domyślny komunikat
-    static void Function4_Dummy()
+    // Funkcje 4-10
+    static bool DomyślnaWariacjaiOdchylenie()
     {
-        Console.WriteLine("To jest funkcja nr 4.");
+        Console.WriteLine("Funkcja 4: Obliczanie teoretycznych wartości dla losowania lotto (6 liczb z zakresu 1-49)...");
+
+        // Obliczenia teoretyczne
+        double expectedValue = (1 + 49) / 2.0;  // Średnia = 25.00
+        double variance = (Math.Pow(49, 2) - 1) / 12.0; // Wariancja = 200.00
+        double stdDev = Math.Sqrt(variance); // Odchylenie standardowe ≈ 14.14
+
+        // Przygotowanie tabeli wyników (header + jedna linia z danymi)
+        List<string> metricsTable = new List<string>();
+        metricsTable.Add("Oczekiwana wartość | Wariancja | Odchylenie standardowe");
+        string row = string.Format("{0,18:F2} | {1,8:F2} | {2,24:F2}", expectedValue, variance, stdDev);
+        metricsTable.Add(row);
+
+        // Określenie ścieżki wyjściowej (w tym samym katalogu, co filePath)
+        string outputFile = Path.Combine(Path.GetDirectoryName(filePath), "DomyślnaWariacjaiOdchylenie.txt");
+        Console.WriteLine($"Plik docelowy: {outputFile}");
+
+        // Jeśli plik już istnieje, zapytaj o akcję
+        if (File.Exists(outputFile))
+        {
+            Console.WriteLine("Plik już istnieje. Wybierz: 1. Nadpisz i kontynuuj, 2. Pomiń ten krok, 3. Wyjście");
+            string option = GetValidOption(new string[] { "1", "2", "3" });
+            if (option == "1")
+            {
+                File.WriteAllLines(outputFile, metricsTable);
+                Console.WriteLine("Plik został nadpisany nowymi danymi.");
+            }
+            else if (option == "2")
+            {
+                Console.WriteLine("Krok pominięty. Nie nadpisano pliku.");
+            }
+            else // "3"
+            {
+                Console.WriteLine("Program zakończony.");
+                return false;
+            }
+        }
+        else
+        {
+            File.WriteAllLines(outputFile, metricsTable);
+            Console.WriteLine("Plik został utworzony z nowymi danymi.");
+        }
+        return true;
     }
     static void Function5_Dummy()
     {
