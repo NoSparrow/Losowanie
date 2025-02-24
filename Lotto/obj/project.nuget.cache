@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "mXeq7lioV/A=",
+  "dgSpecHash": "WGXlsPUnn4s=",
   "success": true,
-  "projectFilePath": "/home/marcin/Pulpit/Programowanie/GitKraken/Losowanie/Lotto/Lotto.csproj",
+  "projectFilePath": "/home/marcin/Pulpit/Programowanie/Losowanie/Lotto/Lotto.csproj",
   "expectedPackageFiles": [
     "/home/marcin/.nuget/packages/htmlagilitypack/1.11.72/htmlagilitypack.1.11.72.nupkg.sha512"
   ],
