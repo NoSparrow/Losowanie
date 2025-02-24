@@ -18,7 +18,6 @@ class Program
     {
         // Funkcja 1: Ustalenie lokalizacji pliku (3 opcje)
         if (!Function1_FileLocation()) return;
-        if (!ContinuePromptDefault("Funkcja 1 zakończona. Wybierz: 1. Następny krok, 2. Wyjście")) return;
 
         // Opcja przed funkcją 2: Czy aktualizować dane?
         Console.WriteLine("Czy aktualizować dane?");
@@ -46,43 +45,28 @@ class Program
             Console.WriteLine("Program zakończony.");
             return;
         }
-        if (!ContinuePromptDefault("Funkcja 2 zakończona. Wybierz: 1. Następny krok, 2. Wyjście")) return;
 
         // Funkcja 3: Sprawdzenie zawartości pliku i ewentualna aktualizacja
         if (!Function3_CheckAndUpdateFile()) return;
-        if (!ContinuePromptDefault("Funkcja 3 zakończona. Wybierz: 1. Następny krok, 2. Wyjście")) return;
 
-        // Funkcje 4-10: Pozostałe funkcje – wyświetlają komunikat i pytają o przejście do następnej funkcji
-        DomyślnaWariacjaiOdchylenie();
-        if (!ContinuePromptCustom("Obliczanie domyślnych wartości wariacji i odchylenia standardowego zakończone. Wybierz: 1. Przejdź do funkcji 5, 2. Wyjście")) return;
+
+        DomyślnaWariacjaiOdchylenie(); //Funkcja 4
 
         Function5_Dummy();
-        if (!ContinuePromptCustom("Funkcja 5 zakończona. Wybierz: 1. Przejdź do funkcji 6, 2. Wyjście")) return;
 
         Function6_Dummy();
-        if (!ContinuePromptCustom("Funkcja 6 zakończona. Wybierz: 1. Przejdź do funkcji 7, 2. Wyjście")) return;
 
         Function7_Dummy();
-        if (!ContinuePromptCustom("Funkcja 7 zakończona. Wybierz: 1. Przejdź do funkcji 8, 2. Wyjście")) return;
 
         Function8_Dummy();
-        if (!ContinuePromptCustom("Funkcja 8 zakończona. Wybierz: 1. Przejdź do funkcji 9, 2. Wyjście")) return;
 
         Function9_Dummy();
-        if (!ContinuePromptCustom("Funkcja 9 zakończona. Wybierz: 1. Przejdź do funkcji 10, 2. Wyjście")) return;
 
         Function10_Dummy();
         Console.WriteLine("Program zakończony.");
     }
 
-    // Funkcja pomocnicza: domyślny prompt (dla funkcji 1-3)
-    static bool ContinuePromptDefault(string message)
-    {
-        Console.WriteLine(message);
-        // Opcje: 1. Następny krok, 2. Wyjście
-        string input = GetValidOption(new string[] { "1", "2" });
-        return input == "1";
-    }
+
 
     // Funkcja pomocnicza: prompt z niestandardowym komunikatem (dla funkcji 4-10)
     static bool ContinuePromptCustom(string message)
