@@ -9,30 +9,28 @@ using System.Threading;
 
 class Program
 {
-    // Zmienne globalne do przechowywania stanu
+    // Globalne zmienne do przechowywania stanu
     static string filePath;
     static List<string> completeTableLines;
     static List<LottoResult> allResults;
 
     static async Task Main()
     {
-        // Funkcja 1: Ustalenie lokalizacji pliku
+        // Funkcja 1: Ustalenie lokalizacji pliku (3 opcje)
         if (!Function1_FileLocation()) return;
-        if (!ContinuePrompt()) return;
+        if (!ContinuePromptDefault("Funkcja 1 zakończona. Wybierz: 1. Następny krok, 2. Wyjście")) return;
 
-        // Nowy etap: Czy aktualizować dane?
+        // Opcja przed funkcją 2: Czy aktualizować dane?
         Console.WriteLine("Czy aktualizować dane?");
-        Console.WriteLine("1. Tak");
-        Console.WriteLine("2. Nie - pomiń krok");
-        Console.WriteLine("3. Zakończ działanie");
-        string option = Console.ReadLine().Trim();
-        if(option == "1")
+        Console.WriteLine("Wybierz: 1. Aktualizuj, 2. Pomiń aktualizację, 3. Wyjście");
+        string updateOption = GetValidOption(new string[] { "1", "2", "3" });
+        if (updateOption == "1")
         {
             await Function2_FetchAndSortData();
         }
-        else if(option == "2")
+        else if (updateOption == "2")
         {
-            if(File.Exists(filePath))
+            if (File.Exists(filePath))
             {
                 completeTableLines = File.ReadAllLines(filePath).ToList();
                 Console.WriteLine("Pominięto aktualizację – użyto danych z pliku.");
@@ -43,65 +41,90 @@ class Program
                 return;
             }
         }
-        else if(option == "3")
+        else // "3"
         {
             Console.WriteLine("Program zakończony.");
             return;
         }
-        else
-        {
-            Console.WriteLine("Niepoprawna opcja. Program zakończony.");
-            return;
-        }
-        if (!ContinuePrompt()) return;
+        if (!ContinuePromptDefault("Funkcja 2 zakończona. Wybierz: 1. Następny krok, 2. Wyjście")) return;
 
-        // Funkcja 3: Sprawdzenie pliku i porównanie zawartości – decyzja użytkownika
+        // Funkcja 3: Sprawdzenie zawartości pliku i ewentualna aktualizacja
         if (!Function3_CheckAndUpdateFile()) return;
-        if (!ContinuePrompt()) return;
+        if (!ContinuePromptDefault("Funkcja 3 zakończona. Wybierz: 1. Następny krok, 2. Wyjście")) return;
 
-        // Funkcje 4-10: Pozostałe funkcje – wyświetlają komunikat i pytają, czy kontynuować
+        // Funkcje 4-10: Pozostałe funkcje – wyświetlają komunikat i pytają o przejście do następnej funkcji
         Function4_Dummy();
-        if (!ContinuePrompt()) return;
+        if (!ContinuePromptCustom("Funkcja 4 zakończona. Wybierz: 1. Przejdź do funkcji 5, 2. Wyjście")) return;
 
         Function5_Dummy();
-        if (!ContinuePrompt()) return;
+        if (!ContinuePromptCustom("Funkcja 5 zakończona. Wybierz: 1. Przejdź do funkcji 6, 2. Wyjście")) return;
 
         Function6_Dummy();
-        if (!ContinuePrompt()) return;
+        if (!ContinuePromptCustom("Funkcja 6 zakończona. Wybierz: 1. Przejdź do funkcji 7, 2. Wyjście")) return;
 
         Function7_Dummy();
-        if (!ContinuePrompt()) return;
+        if (!ContinuePromptCustom("Funkcja 7 zakończona. Wybierz: 1. Przejdź do funkcji 8, 2. Wyjście")) return;
 
         Function8_Dummy();
-        if (!ContinuePrompt()) return;
+        if (!ContinuePromptCustom("Funkcja 8 zakończona. Wybierz: 1. Przejdź do funkcji 9, 2. Wyjście")) return;
 
         Function9_Dummy();
-        if (!ContinuePrompt()) return;
+        if (!ContinuePromptCustom("Funkcja 9 zakończona. Wybierz: 1. Przejdź do funkcji 10, 2. Wyjście")) return;
 
         Function10_Dummy();
         Console.WriteLine("Program zakończony.");
     }
 
-    // Funkcja pomocnicza: pyta, czy kontynuować działanie programu
-    static bool ContinuePrompt()
+    // Funkcja pomocnicza: domyślny prompt (dla funkcji 1-3)
+    static bool ContinuePromptDefault(string message)
     {
-        Console.WriteLine("Czy kontynuować? (y/n)");
-        string answer = Console.ReadLine();
-        return answer.Trim().ToLower().StartsWith("y");
+        Console.WriteLine(message);
+        // Opcje: 1. Następny krok, 2. Wyjście
+        string input = GetValidOption(new string[] { "1", "2" });
+        return input == "1";
     }
 
-    // Funkcja 1: Ustawienie lokalizacji pliku
+    // Funkcja pomocnicza: prompt z niestandardowym komunikatem (dla funkcji 4-10)
+    static bool ContinuePromptCustom(string message)
+    {
+        Console.WriteLine(message);
+        // Opcje: 1. Przejdź do następnej funkcji, 2. Wyjście
+        string input = GetValidOption(new string[] { "1", "2" });
+        return input == "1";
+    }
+
+    // Funkcja pomocnicza: prosi użytkownika o wybór z opcji podanych w validOptions
+    static string GetValidOption(string[] validOptions)
+    {
+        while (true)
+        {
+            string input = Console.ReadLine().Trim();
+            if (validOptions.Contains(input))
+                return input;
+            Console.WriteLine("Niepoprawna odpowiedź. Proszę wybrać: " + string.Join(" lub ", validOptions));
+        }
+    }
+
+    // Funkcja 1: Ustalenie lokalizacji pliku – 3 opcje: 1. Tak (domyślna), 2. Nie (podaj nową lokalizację), 3. Wyjście
     static bool Function1_FileLocation()
     {
-        Console.WriteLine("Funkcja 1: Czy zachować domyślną lokalizację plików (/home/marcin/Pulpit/LottoCS/PobraneDane.txt)? (y/n)");
-        string answer = Console.ReadLine();
+        Console.WriteLine("Funkcja 1: Czy zachować domyślną lokalizację plików (/home/marcin/Pulpit/LottoCS/PobraneDane.txt)?");
+        Console.WriteLine("Wybierz: 1. Tak, 2. Nie (podaj nową lokalizację), 3. Wyjście");
+        string answer = GetValidOption(new string[] { "1", "2", "3" });
         string defaultPath = "/home/marcin/Pulpit/LottoCS/PobraneDane.txt";
-        if (answer.Trim().ToLower().StartsWith("y"))
+        if (answer == "1")
+        {
             filePath = defaultPath;
-        else
+        }
+        else if (answer == "2")
         {
             Console.WriteLine("Podaj nową lokalizację (pełna ścieżka, w tym nazwa pliku):");
             filePath = Console.ReadLine().Trim();
+        }
+        else // "3"
+        {
+            Console.WriteLine("Program zakończony.");
+            return false;
         }
         // Sprawdzenie i utworzenie katalogu oraz pliku, jeśli nie istnieją
         string directory = Path.GetDirectoryName(filePath);
@@ -162,17 +185,16 @@ class Program
         Console.WriteLine("Dane pobrane, posortowane i tabela zbudowana. Łącznie wierszy (z nagłówkiem): " + completeTableLines.Count);
     }
 
-    // Funkcja 3: Sprawdzenie, czy plik istnieje i porównanie jego zawartości z nowymi danymi
-    // Jeśli plik nie istnieje lub zawiera różnice – pyta, co zrobić
+    // Funkcja 3: Sprawdzenie zawartości pliku i ewentualna aktualizacja
     static bool Function3_CheckAndUpdateFile()
     {
         Console.WriteLine("Funkcja 3: Sprawdzanie zawartości pliku...");
         if (!File.Exists(filePath))
         {
             Console.WriteLine("Plik nie istnieje.");
-            Console.WriteLine("Czy chcesz utworzyć nowy plik i zapisać dane? (y/n)");
-            string answer = Console.ReadLine();
-            if (answer.Trim().ToLower().StartsWith("y"))
+            Console.WriteLine("Czy chcesz utworzyć nowy plik i zapisać dane? Wybierz: 1. Utwórz i kontynuuj, 2. Wyjście");
+            string answer = GetValidOption(new string[] { "1", "2" });
+            if (answer == "1")
             {
                 File.WriteAllLines(filePath, completeTableLines);
                 Console.WriteLine("Plik utworzony i dane zapisane.");
@@ -198,9 +220,9 @@ class Program
             if (differences > 0)
             {
                 Console.WriteLine($"W pliku wykryto {differences} różnic.");
-                Console.WriteLine("Czy chcesz nadpisać plik nowymi danymi? (y/n)");
-                string answer = Console.ReadLine();
-                if (answer.Trim().ToLower().StartsWith("y"))
+                Console.WriteLine("Czy chcesz nadpisać plik nowymi danymi? Wybierz: 1. Nadpisz i kontynuuj, 2. Wyjście");
+                string answer = GetValidOption(new string[] { "1", "2" });
+                if (answer == "1")
                 {
                     File.WriteAllLines(filePath, completeTableLines);
                     Console.WriteLine("Plik został zaktualizowany.");
@@ -220,7 +242,7 @@ class Program
         }
     }
 
-    // Funkcje 4-10: Funkcje pomocnicze wyświetlające komunikat z numerem funkcji
+    // Funkcje 4-10: Funkcje pomocnicze wyświetlające domyślny komunikat
     static void Function4_Dummy()
     {
         Console.WriteLine("To jest funkcja nr 4.");
@@ -272,7 +294,7 @@ class Program
         return links;
     }
 
-    // Helper: Pobiera wyniki Lotto z podanej strony (dla konkretnego roku)
+    // Helper: Pobiera wyniki Lotto z danej strony (dla konkretnego roku)
     static List<LottoResult> FetchLottoResultsFromYear(string yearUrl)
     {
         List<LottoResult> results = new List<LottoResult>();
