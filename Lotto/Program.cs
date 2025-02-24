@@ -20,8 +20,39 @@ class Program
         if (!Function1_FileLocation()) return;
         if (!ContinuePrompt()) return;
 
-        // Funkcja 2: Pobranie danych, sortowanie i budowa tabeli (w formie listy stringów)
-        await Function2_FetchAndSortData();
+        // Nowy etap: Czy aktualizować dane?
+        Console.WriteLine("Czy aktualizować dane?");
+        Console.WriteLine("1. Tak");
+        Console.WriteLine("2. Nie - pomiń krok");
+        Console.WriteLine("3. Zakończ działanie");
+        string option = Console.ReadLine().Trim();
+        if(option == "1")
+        {
+            await Function2_FetchAndSortData();
+        }
+        else if(option == "2")
+        {
+            if(File.Exists(filePath))
+            {
+                completeTableLines = File.ReadAllLines(filePath).ToList();
+                Console.WriteLine("Pominięto aktualizację – użyto danych z pliku.");
+            }
+            else
+            {
+                Console.WriteLine("Plik nie istnieje, a pominięto aktualizację danych. Program nie może kontynuować.");
+                return;
+            }
+        }
+        else if(option == "3")
+        {
+            Console.WriteLine("Program zakończony.");
+            return;
+        }
+        else
+        {
+            Console.WriteLine("Niepoprawna opcja. Program zakończony.");
+            return;
+        }
         if (!ContinuePrompt()) return;
 
         // Funkcja 3: Sprawdzenie pliku i porównanie zawartości – decyzja użytkownika
@@ -132,7 +163,7 @@ class Program
     }
 
     // Funkcja 3: Sprawdzenie, czy plik istnieje i porównanie jego zawartości z nowymi danymi
-    // Jeśli plik nie istnieje lub różni się – pyta, co zrobić (nadpisać, lub zakończyć program bez zapisywania)
+    // Jeśli plik nie istnieje lub zawiera różnice – pyta, co zrobić
     static bool Function3_CheckAndUpdateFile()
     {
         Console.WriteLine("Funkcja 3: Sprawdzanie zawartości pliku...");
@@ -272,7 +303,6 @@ class LottoResult
     public int DrawNumber { get; }
     public string Date { get; }
     public List<int> Numbers { get; }
-
     public LottoResult(int drawNumber, string date, List<int> numbers)
     {
         DrawNumber = drawNumber;
