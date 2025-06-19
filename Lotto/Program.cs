@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
@@ -52,7 +53,7 @@ class Program
 
         DomyślnaWariacjaiOdchylenie(); //Funkcja 4
 
-        Function5_Dummy();
+        Function5_ProcessData();
 
         Function6_Dummy();
 
@@ -273,10 +274,94 @@ class Program
         }
         return true;
     }
-    static void Function5_Dummy()
+
+    static bool Function5_ProcessData()
     {
-        Console.WriteLine("To jest funkcja nr 5.");
+        Console.WriteLine("Funkcja 5: Przetwarzanie danych sekwencyjne...");
+
+        string folderPath = Path.GetDirectoryName(filePath);
+        string processedFile = Path.Combine(folderPath, "Przetworzone.txt");
+        string resultsFile = Path.Combine(folderPath, "Wyniki.txt");
+
+        // Odczytaj dane z pliku PobraneDane.txt (pomijamy nagłówek)
+        if (!File.Exists(filePath))
+        {
+            Console.WriteLine("Plik PobraneDane.txt nie istnieje. Przerywam przetwarzanie.");
+            return false;
+        }
+        var allData = File.ReadAllLines(filePath).Skip(1).ToList();
+
+        // Odczytaj już przetworzone losowania z Przetworzone.txt (pomijamy nagłówek, jeśli istnieje)
+        HashSet<string> processedSet = new HashSet<string>();
+        if (File.Exists(processedFile))
+        {
+            var procLines = File.ReadAllLines(processedFile).ToList();
+            if (procLines.Count > 0)
+                processedSet = new HashSet<string>(procLines.Skip(1));
+        }
+        else
+        {
+            File.Create(processedFile).Close();
+        }
+
+        // Wyznacz losowania, które nie zostały jeszcze przetworzone
+        var unprocessed = allData.Where(line => !processedSet.Contains(line)).ToList();
+        if (unprocessed.Count == 0)
+        {
+            Console.WriteLine("Brak nowych losowań do przetworzenia.");
+            Console.WriteLine("Wybierz: 1. Przejdź dalej, 2. Wyjście");
+            return GetValidOption(new string[] { "1", "2" }) == "1";
+        }
+
+        Console.WriteLine($"Do przetworzenia: {unprocessed.Count} losowań.");
+
+        // Teoretyczne wartości dla losowania lotto: 6 liczb z zakresu 1-49
+        double mean = 25.0;
+        double stdDev = 14.1421356237; // dokładność do 10 miejsc
+
+        List<string> resultLines = new List<string>();
+        List<string> processedLines = new List<string>();
+
+        // Przetwarzaj losowania jedno po drugim
+        foreach (var line in unprocessed)
+        {
+            var parts = line.Split('|');
+            string date = parts[0].Trim();
+            // Zakładamy, że kombinacja liczb znajduje się w części po pierwszym '|' i są oddzielone spacjami
+            var numbers = parts[1].Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)
+                                    .Select(int.Parse).ToList();
+
+            // Oblicz Z-score dla każdej liczby z dokładnością do 10 miejsc po przecinku
+            var zScores = numbers.Select(n => Math.Round((n - mean) / stdDev, 10)).ToList();
+            double avgZ = Math.Round(zScores.Average(), 10);
+            double comboZ = Math.Round(zScores.Sum() / Math.Sqrt(zScores.Count), 10);
+
+            // Format wynikowy: Data | Zwycięska Kombinacja | Z-score liczba1 | ... | Z-score średnia | Z-score kombinacji
+            string result = $"{date} | {string.Join(" ", numbers)} | {string.Join(" | ", zScores.Select(z => z.ToString("F10")))} | {avgZ:F10} | {comboZ:F10}";
+            resultLines.Add(result);
+            processedLines.Add(line);
+
+            Console.WriteLine($"Przetworzono losowanie: {date}");
+            Console.WriteLine("Naciśnij ENTER, aby kontynuować lub wpisz 'stop', aby zakończyć przetwarzanie:");
+            string input = Console.ReadLine().Trim().ToLower();
+            if (input == "stop")
+            {
+                Console.WriteLine("Przerwano dalsze przetwarzanie losowań.");
+                break;
+            }
+        }
+
+        // Zapisz przetworzone wyniki do plików (dopisuje do istniejących)
+        File.AppendAllLines(resultsFile, resultLines);
+        File.AppendAllLines(processedFile, processedLines);
+
+        Console.WriteLine("Przetwarzanie sekwencyjne zakończone.");
+        Console.WriteLine("Wybierz: 1. Przejdź dalej, 2. Wyjście");
+        return GetValidOption(new string[] { "1", "2" }) == "1";
     }
+
+
+
     static void Function6_Dummy()
     {
         Console.WriteLine("To jest funkcja nr 6.");
